@@ -1,0 +1,10 @@
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
+
+# Maven
+/target/
+
+# Docker / Compose
+pgdata/

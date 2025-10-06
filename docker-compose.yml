@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    container_name: patient-postgres
+    environment:
+      POSTGRES_DB: patientdb
+      POSTGRES_USER: patient_user
+      POSTGRES_PASSWORD: patient_pass
+    # Persist data in a folder at the repo root (created automatically)
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    # No host port published -> DB is reachable only inside the internal network
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  patient-service:
+    build:
+      context: ./patient-service
+      dockerfile: Dockerfile
+    container_name: patient-service
+    depends_on:
+      db:
+        condition: service_healthy
+    # Expose app to your host
+    ports:
+      - "4000:4000"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/patientdb
+      SPRING_DATASOURCE_USERNAME: patient_user
+      SPRING_DATASOURCE_PASSWORD: patient_pass
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SERVER_PORT: "4000"
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+    internal: true
