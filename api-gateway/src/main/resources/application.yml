@@ -1,0 +1,29 @@
+server:
+  port: 4004
+
+# API Gateway routes requests to different services
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # How It Works:
+        # When a client makes a request like: GET http://localhost:4004/api/v1/patients/123
+        # The API Gateway:
+        # 1. Matches the path /api/v1/patients/**
+        # 2. Strips the first path segment (/api/v1/patients becomes /patients)
+        # 3. Forwards the request to http://patient-service:4000/patients/123
+        - id: patient-service-route
+          uri: http://patient-service:4000
+          predicates:
+            - Path=/api/v1/patients/**
+          filters:
+          ##["api", "v1", "patients", "123"] -> ["patients", "123"]
+            - StripPrefix=2
+        -id: api-docs-patient-service-route
+          uri: http://patient-service:4000
+          predicates:
+            - Path=/api/v1/api-docs/patients/**
+          filters:
+            - rewrite-path=/api-docs/patients,/v3/api-docs
