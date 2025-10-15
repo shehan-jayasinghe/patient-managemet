@@ -21,9 +21,9 @@ spring:
           filters:
           ##["api", "v1", "patients", "123"] -> ["patients", "123"]
             - StripPrefix=2
-        -id: api-docs-patient-service-route
+        - id: api-docs-patient-service-route
           uri: http://patient-service:4000
           predicates:
             - Path=/api/v1/api-docs/patients/**
           filters:
-            - rewrite-path=/api-docs/patients,/v3/api-docs
+            - RewritePath=/api/v1/api-docs/patients,/v3/api-docs
